@@ -3,6 +3,8 @@
 namespace models;
 
 use PDO;
+use Exception;
+use InvalidArgumentException;
 
 class Message {
     private $pdo;
@@ -17,7 +19,7 @@ class Message {
         $this->pdo = $pdo;
     }
     public function create($name, $text) {
-        $stmt = $this->pdo->prepare("INSERT INTO messages (name, text, status, createdAt) VALUES (?, ?, 'pending', NOW())");
+        $stmt = $this->pdo->prepare("INSERT INTO messages (name, message, status, created_at) VALUES (?, ?, 'pending', NOW())");
         $result = $stmt->execute([$name, $text]);
         if ($result) {
             $this->id = $this->pdo->lastInsertId();
@@ -33,15 +35,14 @@ class Message {
         $stmt = $this->pdo->prepare("SELECT * FROM messages WHERE id = ?");
         $stmt->execute([$id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($data) {
-            $this->id = $data['id'];
+        if($data) {
+            $this->id = $data['id']; // Сохраняем ID
             $this->name = $data['name'];
-            $this->text = $data['text'];
+            $this->text = $data['message']; // Проверьте имя поля в БД!
             $this->status = $data['status'];
-            $this->createdAt = $data['createdAt'];
-            return true;
         }
-        return false;
+
+        return $data;
     }
 
     public function getApprovedMessages() {
@@ -85,7 +86,7 @@ class Message {
         if (!$this->id) {
             throw new Exception("Невозможно обновить сообщение без ID");
         }
-        $stmt = $this->pdo->prepare("UPDATE messages SET name = ?, text = ?, status = ? WHERE id = ?");
+        $stmt = $this->pdo->prepare("UPDATE messages SET name = ?, message = ?, status = ? WHERE id = ?");
         return $stmt->execute([$this->name, $this->text, $this->status, $this->id]);
     }
 

@@ -1,5 +1,4 @@
 <?php
-// Предполагается, что в $messages передан массив всех сообщений из контроллера
 ?>
     <h1>Все сообщения</h1>
 
@@ -25,6 +24,10 @@
                 <td><?= nl2br(htmlspecialchars($msg['message'])) ?></td>
                 <td><?= htmlspecialchars($msg['status']) ?></td>
                 <td><?= htmlspecialchars($msg['created_at']) ?></td>
+                <td><a href="/projectObj/public/index.php?action=approve&id=<?= $msg['id'] ?>">Одобрить</a>&nbsp&nbsp
+                    <a href="/projectObj/public/index.php?action=reject&id=<?= $msg['id'] ?>">Отклонить</a>&nbsp&nbsp
+                    <a href="/projectObj/public/index.php?action=edit&id=<?= $msg['id'] ?>">Обновить</a>
+                </td>
             </tr>
         <?php endforeach; ?>
         </tbody>

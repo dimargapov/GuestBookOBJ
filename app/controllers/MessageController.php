@@ -4,6 +4,8 @@ namespace controllers;
 
 use models\Message;
 
+use models\Admin;
+
 class MessageController {
     private Message $messageModel;
 
@@ -23,7 +25,10 @@ class MessageController {
 //            exit;
 //        }
         $messages = $this->messageModel->getAllMessages();
-        require 'app/views/admin/messages.php';
+        ob_start();
+        require(__DIR__ . '/../views/admin/messages.php');
+        $content = ob_get_clean();
+        return $content;
     }
 
     public function createForm() {
@@ -35,45 +40,38 @@ class MessageController {
         $text = trim($_POST['text'] ?? '');
         if (empty($name) || empty($text)) {
             $error = 'Поля должны быть заполнены!';
-            require 'app/views/message/create.php';
             return;
         }
         if ($this->messageModel->create($name, $text)) {
-            header('Location: /messages');
+            $successMessage = 'Сообщение отправлено на модерацию!';
+            header('Location: /projectObj/public/index.php?action=list');
             exit;
         } else {
             $error = 'Ошибка при сохранении сообщения';
-            require 'app/views/message/create.php';
         }
     }
 
-    public function approve($id, $adminId) {
-        if ($this->messageModel->findById($id)) {
-            $this->messageModel->approve($adminId);
-            header('Location: /admin/messages');
+    public function approveMessage($id) {
+            $this->messageModel->findById($id);
+            $this->messageModel->approve();
+            header('Location: /projectObj/public/index.php?action=messages');
             exit;
-        } else {
-            $error = 'Сообщение не найдено';
-        }
     }
-    public function reject($id, $adminId) {
+    public function rejectMessage($id) {
         if ($this->messageModel->findById($id)) {
-            $this->messageModel->reject($adminId);
-            header('Location: /admin/messages');
+            $this->messageModel->reject();
+            header('Location: /projectObj/public/index.php?action=messages');
             exit;
         } else {
             $error = 'Сообщение не найдено';
         }
     }
     public function editForm($id) {
-        if ($this->messageModel->findById($id)) {
-            $message = $this->messageModel;
-            require 'app/views/message/edit.php';
-        } else {
-            $error = 'Сообщение не найдено';
-        }
+        $message = $this->messageModel->findById($id);
+        require (__DIR__ . '/../views/message/edit_form.php');
+        exit;
     }
-    public function update($id) {
+    public function updateMessage($id) {
         if (!$this->messageModel->findById($id)) {
             echo 'Сообщение не найдено';
             return;
@@ -82,7 +80,7 @@ class MessageController {
         $text = trim($_POST['text'] ?? '');
         try {
             $this->messageModel->update($name, $text, 'updated');
-            header('Location: /admin/messages');
+            header('Location: /projectObj/public/index.php?action=edit&id='.$id);
             exit;
         } catch (InvalidArgumentException $e) {
             $error = $e->getMessage();

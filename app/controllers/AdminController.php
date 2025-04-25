@@ -5,7 +5,7 @@ use models\Admin;
 
 use Exception;
 use InvalidArgumentException;
-class adminController {
+class AdminController {
     private $adminModel;
     public function __construct() {
         $this->adminModel = new Admin($pdo);
